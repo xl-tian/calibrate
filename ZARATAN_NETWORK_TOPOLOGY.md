@@ -102,21 +102,30 @@ Intra-leaf, leaf d85b40, AMD EPYC 7763 nodes [jobs 19806741, 19806950]:
 | Bidirectional (full-duplex, `-b`) | a5-5 ↔ a5-3 | **191.8 Gb/s** total (≈96 Gb/s each way) |
 | 2 concurrent flows (4 distinct nodes) | a5-5→a5-3, a5-7→a5-6 | **98.1 + 97.9 Gb/s** (no degradation) |
 
+### Inter-leaf single flow, cross-spine — compute-b6-18 (leaf d55ba6) ↔ compute-b6-45 (leaf d85ae0) [job 19815726]
+
+| Test | Result |
+|------|--------|
+| Unidirectional single flow (3 hops, leaf→spine→leaf) | **90.7 Gb/s** |
+| Bidirectional (full-duplex, `-b`) | **186.0 Gb/s** total |
+
+→ A cross-spine flow sustains essentially the same ~90–98 Gb/s as intra-leaf, confirming the
+**leaf↔spine links carry full HDR100 node bandwidth** (the spine path is not the bottleneck for a
+single flow). Captured by `interleaf_job.sh` once the cluster freed up.
+
 Conclusions from measurements:
 - Each node link is **HDR100, ~98 Gb/s achievable**, and **full-duplex** (≈100+100).
 - The leaf switch is **internally non-blocking**: two simultaneous pairs (4 nodes) each
   sustain full HDR100 with no contention (aggregate ≈196 Gb/s through the leaf).
+- A **cross-spine flow also reaches ~91 Gb/s** (≈186 Gb/s bidirectional), so the leaf↔spine
+  uplinks deliver full node-rate bandwidth on the path tested.
 
-**Cross-spine (inter-leaf) bisection was NOT empirically measured.** At test time the cluster
-was heavily loaded — idle, non-reserved capacity was concentrated on a single leaf (d85b00),
-and `--nodelist`-pinned jobs spanning two leaves were unschedulable (`ReqNodeNotAvail, May be
-reserved for other job`: idle nodes were backfill-earmarked for queued jobs, plus a 14-node
-`unstable` MAINT reservation). A single cross-spine flow would in any case just reproduce
-~98 Gb/s (one flow cannot exceed its own HDR100 NIC); demonstrating the 1:1 spine bisection
-would require many concurrent inter-leaf pairs, which the current allocation could not provide.
-The non-blocking spine claim therefore rests on the port-count math + UMD docs, not measurement.
-To verify later, run `ibcong2.sh` (3 sources on distinct leaves → 3 sinks on one leaf) when
-≥2 nodes per leaf are free on multiple leaves.
+**The full 1:1 non-blocking *bisection* (spine not oversubscribed under load) was NOT directly
+measured** — that requires *many concurrent* inter-leaf pairs saturating the spine, not the single
+cross-spine flow above. Demonstrating it needs ≥2 free nodes on each of several leaves at once
+(use `ibcong2.sh`; see "Replicating the cross-spine test" below). The non-blocking claim rests on
+the port-count math + UMD docs; the single-flow measurement confirms the per-link rate but not the
+aggregate bisection ratio.
 
 ## Reproduce
 
@@ -124,3 +133,80 @@ To verify later, run `ibcong2.sh` (3 sources on distinct leaves → 3 sinks on o
 - `cat /etc/slurm/topology.conf` or `scontrol show topology` — fat-tree structure.
 - `sbatch ibfinal.sh` — point-to-point + bidirectional + concurrent ib_write_bw.
 - `sbatch ibdiag.sh` — diagnostics + intra/inter-leaf BW (auto-detects leaf placement).
+
+## How to replicate the bandwidth measurements
+
+### Tools (all preinstalled, no build needed)
+`ib_write_bw`, `ib_read_bw`, `ib_send_bw` (from `perftest`) live in `/usr/bin` on every node.
+The IB device on a compute node is **`mlx5_0`** (link layer InfiniBand). For MPI-level numbers,
+`module load osu-micro-benchmarks/7.1-1/gcc/...` provides `osu_bw`/`osu_bibw`.
+
+### How `ib_write_bw` is driven
+It's a server/client pair: start the server on one node, then the client on the other pointing
+at the server's hostname. The QP-info handshake goes over TCP (management net); the actual data
+path is RDMA over InfiniBand. Flags used in these scripts:
+- `-d mlx5_0` device · `-F` suppress CPU-freq warning · `--report_gbits` Gb/s output
+- `-s 1048576` 1 MiB messages (large enough to hit line rate) · `-n N` iterations · `-q 4` 4 QPs
+- `-b` **bidirectional** (full-duplex; reported number is the sum of both directions)
+
+Output data row columns:
+`#bytes  #iterations  BW_peak[Gb/sec]  BW_average[Gb/sec]  MsgRate[Mpps]`
+→ read **BW_average** as the achieved bandwidth. Expect ~98 Gb/s on an HDR100 link.
+
+### A) Intra-leaf point-to-point (always easy — one leaf usually has free nodes)
+`ibfinal.sh` is unpinned: it grabs 4 nodes, auto-detects their leaf placement from
+`topology.conf`, and runs unidirectional + bidirectional + two-concurrent-flow tests.
+```bash
+sbatch ibfinal.sh
+grep -E 'UNIDIR|BIDIR|CONCUR' ibfinal.*.out     # the parsed results
+```
+Expected (and what we measured): unidir ~98 Gb/s, bidir ~192 Gb/s (full-duplex ≈100+100),
+two concurrent pairs ~98+98 (leaf switch internally non-blocking).
+
+Manual single pair on a chosen leaf:
+```bash
+# pick two free nodes on ONE leaf, e.g. two idle compute-b8-2x.. (leaf d85b00):
+S=compute-b8-44; C=compute-b8-45
+srun -N1 -n1 -w $S bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -s 1048576 -n 5000 -q 4' &
+sleep 4
+srun -N1 -n1 -w $C bash -lc "ib_write_bw -d mlx5_0 -F --report_gbits -s 1048576 -n 5000 -q 4 $S"
+```
+
+### B) Inter-leaf single flow (confirms the per-link rate across the spine)
+Two nodes on two different leaves; one RDMA flow. Easy to get with the picker:
+```bash
+mapfile -t P < <(./pick_cross_leaf_pair.sh 2)   # one cleanly-idle node on each of 2 leaves
+S=${P[0]}; C=${P[1]}
+sbatch -N2 --nodelist=$S,$C --time=00:05:00 ibfinal.sh   # auto-detects it's inter-leaf
+```
+A single flow can't exceed its own HDR100 NIC, so this just reconfirms ~98 Gb/s — it does **not**
+reveal blocking. (Same scheduling caveats as the latency test apply; see the next section.)
+
+Turnkey version (auto-retries until a cross-leaf pair frees up, like the latency runner):
+```bash
+MAX_TRIES=240 GRACE=75 ./run_interleaf_bw.sh    # -> ibfinal.<jobid>.out, id in /tmp/j_interbw.txt
+```
+Don't run it at the same time as `run_interleaf_latency.sh` — they compete for the same scarce
+cross-leaf pairs; run one, then the other.
+
+### C) Inter-leaf bisection — proving the 1:1 non-blocking spine (the hard one)
+To show the leaf↔spine uplinks aren't oversubscribed you need **many concurrent inter-leaf
+flows** saturating the spine, not one. `ibcong2.sh` sets up 3 sources on 3 distinct leaves all
+sending simultaneously to 3 sinks on leaf `d85b00`, so the aggregate probes `d85b00`'s spine
+bandwidth (expect ≈3×98 ≈ 294 Gb/s if non-blocking):
+```bash
+./pick_cross_leaf_pair.sh 3        # 3 source nodes on 3 distinct leaves
+# put those 3 in ibcong2.sh SRC=(...), and 3 idle compute-b8-2x.. nodes in SNK=(...), then:
+sbatch ibcong2.sh
+grep -E 'FLOW|SINGLE' ibcong2.*.out
+```
+This needs several leaves each with a free node **at the same time** — the exact resource
+contention that blocked it during the session.
+
+### Scheduling caveats (why inter-leaf tests are hard on a busy cluster)
+Identical to the latency case — idle capacity concentrating on one leaf, `sinfo -t idle`
+returning DRAIN-flagged nodes, stuck `comp` epilogs, backfill earmarking of pinned nodes, and
+the `unstable` MAINT reservation. The **full explanation + the `pick_cross_leaf_pair.sh` /
+`run_interleaf_latency.sh` workarounds** are written up once in
+**`ZARATAN_NETWORK_LATENCY.md` → "How to replicate the inter-leaf measurement"**; the same picker
+and retry pattern apply verbatim to bandwidth (swap `iblat2.sh`→`ibfinal.sh`/`ibcong2.sh`).
