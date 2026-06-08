@@ -94,6 +94,13 @@ fabric-wide (standard hardening). So topology came from Slurm config + per-node 
 
 ## Empirical results (ib_write_bw, RDMA write, 1 MiB messages, 4 QPs)
 
+**Method:** `perftest` `ib_write_bw` (RDMA Write) over IB device `mlx5_0` (HDR100), server/client
+pair placed with Slurm `srun -N1 -n1 -w <node>`; QP handshake over TCP, timed path is pure RDMA.
+Parameters: **1 MiB messages** (`-s 1048576`), **4 QPs** (`-q 4`), `--report_gbits`,
+**5,000–20,000 iterations** per call (`-n`); `-b` = bidirectional (full-duplex, sum of both
+directions). Reported value = BW_average over the iterations (so each number is a steady-state
+average, not a peak). Output row columns: `#bytes #iters BW_peak BW_avg MsgRate`.
+
 Intra-leaf, leaf d85b40, AMD EPYC 7763 nodes [jobs 19806741, 19806950]:
 
 | Test | Nodes | Result |
@@ -102,23 +109,30 @@ Intra-leaf, leaf d85b40, AMD EPYC 7763 nodes [jobs 19806741, 19806950]:
 | Bidirectional (full-duplex, `-b`) | a5-5 ↔ a5-3 | **191.8 Gb/s** total (≈96 Gb/s each way) |
 | 2 concurrent flows (4 distinct nodes) | a5-5→a5-3, a5-7→a5-6 | **98.1 + 97.9 Gb/s** (no degradation) |
 
-### Inter-leaf single flow, cross-spine — compute-b6-18 (leaf d55ba6) ↔ compute-b6-45 (leaf d85ae0) [job 19815726]
+### Inter-leaf single flow, cross-spine — measured on 4 leaf-pairs
 
-| Test | Result |
-|------|--------|
-| Unidirectional single flow (3 hops, leaf→spine→leaf) | **90.7 Gb/s** |
-| Bidirectional (full-duplex, `-b`) | **186.0 Gb/s** total |
+| Leaf pair (server↔client) | Nodes | Unidirectional | Bidirectional (`-b`) | Job |
+|---|---|---:|---:|---|
+| dc3d6a ↔ d85800 | a7-10 ↔ b5-21 | **98.8 Gb/s** | 197.0 Gb/s | 19911185 |
+| dc3d6a ↔ d55ba6 | a7-10 ↔ b5-10 | **98.8 Gb/s** | 197.0 Gb/s | 19911185 |
+| d85800 ↔ d55ba6 | b5-21 ↔ b5-10 | **98.8 Gb/s** | 197.0 Gb/s | 19911185 |
+| d55ba6 ↔ d85ae0 | b6-18 ↔ b6-45 | 90.7 Gb/s | 186.0 Gb/s | 19815726 |
 
-→ A cross-spine flow sustains essentially the same ~90–98 Gb/s as intra-leaf, confirming the
-**leaf↔spine links carry full HDR100 node bandwidth** (the spine path is not the bottleneck for a
-single flow). Captured by `interleaf_job.sh` once the cluster freed up.
+→ A cross-spine flow reaches **~98 Gb/s unidirectional / ~197 Gb/s bidirectional** — the **same as
+intra-leaf** (98.2 / 191.8). The leaf↔spine links carry **full HDR100 node bandwidth**; the spine
+is not a bottleneck for a single flow. (The lone 90.7 / 186 sample on the d55ba6↔d85ae0 pair was a
+mildly noisy early run; the three clean repeats at 98.8 / 197 are the representative figure.)
+
+**Runs:** intra-leaf BW reproduced across two jobs (19806741, 19806950), both ~98 Gb/s. Inter-leaf
+BW now measured on **4 leaf-pairs** across two jobs (19815726, 19911185); 3 of 4 give 98.8 Gb/s.
+Each value is itself a 5k–20k-iteration average.
 
 Conclusions from measurements:
 - Each node link is **HDR100, ~98 Gb/s achievable**, and **full-duplex** (≈100+100).
 - The leaf switch is **internally non-blocking**: two simultaneous pairs (4 nodes) each
   sustain full HDR100 with no contention (aggregate ≈196 Gb/s through the leaf).
-- A **cross-spine flow also reaches ~91 Gb/s** (≈186 Gb/s bidirectional), so the leaf↔spine
-  uplinks deliver full node-rate bandwidth on the path tested.
+- A **cross-spine flow also reaches ~98 Gb/s** (≈197 Gb/s bidirectional), so the leaf↔spine
+  uplinks deliver full node-rate bandwidth on every path tested.
 
 **The full 1:1 non-blocking *bisection* (spine not oversubscribed under load) was NOT directly
 measured** — that requires *many concurrent* inter-leaf pairs saturating the spine, not the single

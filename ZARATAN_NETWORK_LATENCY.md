@@ -9,14 +9,15 @@ Latency on an InfiniBand fat tree decomposes into three contributors per travers
 
 | Component | Value | Source |
 |---|---|---|
-| Full intra-leaf node→node, 1 switch hop (2×HCA + leaf switch + 2 DAC cables) | **~1.26 µs** one-way (ib_write/ib_send); 2.39 µs read-RTT | **measured** |
-| Full inter-leaf node→node, 3 switch hops (leaf→spine→leaf) | **~1.81 µs** one-way (ib_write/ib_send); 3.54 µs read-RTT | **measured** |
-| Per extra switch hop, end-to-end (leaf↔spine traversal: ASIC + cable) | **~0.28 µs** (measured); vendor ASIC-only ~90–130 ns | measured diff / NVIDIA QM8700 datasheet |
+| Full intra-leaf node→node, 1 switch hop (2×HCA + leaf switch + 2 DAC cables) | **~1.1–1.3 µs** one-way (median 1.21; 9 leaves); 2.39 µs read-RTT | **measured** |
+| Full inter-leaf node→node, 3 switch hops (leaf→spine→leaf) | **~1.64–1.81 µs** one-way (median 1.70; 6 leaf-pairs); 3.2–3.5 µs read-RTT | **measured** |
+| Per extra switch hop, end-to-end (leaf↔spine traversal: ASIC + cable) | **~0.24 µs** (measured, range 0.22–0.30); vendor ASIC-only ~90–130 ns | measured diff / NVIDIA QM8700 datasheet |
 | Cable propagation | **~5 ns/m** (copper DAC ~4.3, fiber ~5) | physics / cable specs |
 
 So a "link" traversal (cable + the switch port it lands on) costs ~0.1–0.3 µs end-to-end; the bulk
 of any latency (~1 µs) is the two HCA/host endpoints, paid once regardless of path. Going from
-same-leaf to cross-spine adds **~0.55 µs** total (two extra hops).
+same-leaf to cross-spine adds **~0.5 µs** total (two extra hops). The inter-leaf value varies
+~0.17 µs by leaf-pair (different leaf↔spine cable lengths across the machine room).
 
 A "link" here = one cable + the switch/HCA port it lands on. The dominant, fixed cost is the
 HCA/endpoint stack (~0.5–0.6 µs each side); each *extra switch hop* on the path adds ~0.28 µs
@@ -52,29 +53,73 @@ inherently requires a there-and-back), so it ≈ 2× the one-way number.
 → One node→node hop (2×HCA + 1 leaf switch + 2 short DAC cables) ≈ **1.26 µs one-way**.
 Cross-check: read RTT 2.39 µs ≈ 2 × 1.2 µs, consistent.
 
-### Inter-leaf, 3 switch hops — compute-b6-18 (leaf d55ba6) ↔ compute-b6-45 (leaf d85ae0) [job 19815726]
+**Reconfirmed on 8 more leaves** (bonus — the `interleaf_multi` resubmit chain re-ran the intra
+baseline on every leaf it landed on; `ib_write_lat` t_typical):
 
-**MEASURED** (2026-06-06 02:17). Path = leaf d55ba6 → spine → leaf d85ae0 (verified the two nodes
-are on different leaves). Captured by `interleaf_job.sh` after the cluster freed up — see
-"How to replicate the inter-leaf measurement" below for the (non-trivial) scheduling story.
+| Leaf | d85ac0 | dc3f4a | d85800 | d55b66 | dc3d6a | d55ba6 | dc426a | d85b40 |
+|------|-------:|-------:|-------:|-------:|-------:|-------:|-------:|-------:|
+| µs | 1.11 | 1.13 | 1.12 | 1.23 | 1.24 | 1.25 | 1.30 | 1.44 |
 
-| Tool | t_typical | t_avg | meaning |
-|------|----------:|------:|---------|
-| ib_write_lat | **1.81 µs** | 1.90 µs | one-way RDMA-write |
-| ib_send_lat  | **1.81 µs** | 2.13 µs | one-way send/recv |
-| ib_read_lat  | **3.54 µs** | 3.70 µs | round-trip read |
+Intra-leaf one-way is **~1.1–1.3 µs** across the fabric (median ≈ 1.21 µs); the d85b40 outlier
+(1.44 µs, the GPU-island leaf) is the only one notably higher. This tightens the intra baseline
+used in the per-hop decomposition below.
 
-→ Cross-spine node→node (2×HCA + 3 switches + 4 cables incl. 2 leaf↔spine) ≈ **1.81 µs one-way**.
-Cross-check: read RTT 3.54 µs ≈ 2 × 1.8 µs, consistent.
+#### What the columns mean (perftest reports a *distribution*, not one ping)
+perftest does the ping-pong **20,000 times**, producing 20,000 latency samples; the columns are
+summary statistics of that distribution. Raw `ib_write_lat` row from the intra-leaf run above:
+
+```
+#bytes #iterations  t_min  t_max  t_typical  t_avg  t_stdev   99%    99.9%
+ 2      20000        1.21   4.00   1.26       1.31   0.06      1.43   2.87
+```
+
+| Column | Value | Meaning |
+|--------|------:|---------|
+| `t_min` | 1.21 µs | fastest single ping of the 20,000 (hardware floor / best case) |
+| `t_max` | 4.00 µs | slowest single ping (one OS-scheduling/interrupt outlier) |
+| `t_typical` | **1.26 µs** | **median** (50th pct) — half faster, half slower; the robust headline value |
+| `t_avg` | 1.31 µs | **mean** — pulled *above* the median by the few slow pings (right-skewed) |
+| `t_stdev` | 0.06 µs | std-dev — spread of the samples (~5% of mean ⇒ very consistent link) |
+| `99%` | 1.43 µs | 99th percentile — 99% of pings finished in ≤ this |
+| `99.9%` | 2.87 µs | 99.9th percentile — tail latency; only ~20 pings were slower |
+
+The distribution is **right-skewed**: a hard floor (~1.21 µs) with a thin tail to 4.00 µs, so
+`median (1.26) < mean (1.31)`. We quote `t_typical` (median) because it is immune to the handful
+of OS-induced outliers that inflate the mean; the median→99.9% gap (1.26→2.87 µs) quantifies jitter.
+(The *bandwidth* tool `ib_write_bw` reports only `BW_peak`/`BW_average`, not percentiles, because
+throughput is an aggregate over many messages rather than a per-message timing.)
+
+### Inter-leaf, 3 switch hops — MEASURED across 6 different leaf-pairs
+
+Every pair below was **topology-verified** (each job re-derived both nodes' leaf from
+`topology.conf` and asserted they differ before measuring). t_typical (median) shown.
+
+| Leaf pair (server↔client) | Nodes | ib_write_lat | ib_send_lat | ib_read_lat (RTT) | Job |
+|---|---|---:|---:|---:|---|
+| dc3d6a ↔ d85ac0 | a7-10 ↔ a8-47 | **1.64 µs** | 1.65 | 3.17 | 19906266 |
+| d55ba6 ↔ d85ac0 | b5-10 ↔ a8-47 | **1.66 µs** | 1.68 | 3.21 | 19906266 |
+| dc3d6a ↔ d85ae0 | a7-10 ↔ b6-27 | **1.69 µs** | 1.70 | 3.27 | 19906266 |
+| d55ba6 ↔ d85ae0 | b5-10 ↔ b6-27 | **1.71 µs** | 1.72 | 3.32 | 19906266 |
+| dc3d6a ↔ d55ba6 | a7-10 ↔ b5-10 | **1.73 µs** | 1.74 | 3.34 | 19906266 |
+| d55ba6 ↔ d85ae0 | b6-18 ↔ b6-45 | **1.81 µs** | 1.81 | 3.54 | 19815726 |
+
+→ Cross-spine node→node (2×HCA + 3 switches + 4 cables incl. 2 leaf↔spine) = **~1.64–1.81 µs
+one-way** (median ≈ **1.70 µs**). The ~0.17 µs spread across pairs is real and reflects **different
+leaf↔spine cable lengths / spine port** per leaf — i.e. some leaf-pairs are physically farther
+apart than others. Read RTT (3.17–3.54 µs ≈ 2× the one-way) confirms each row.
+
+(A 6th combo dc3d6a↔d55b66 was topology-verified but its perftest rows didn't parse — one transient
+dropped sample; the 5 above + the original 1.81 µs run are clean.)
 
 ### Decomposition (per switch hop) — from measured intra vs inter
 The two paths differ by exactly 2 switch hops (the leaf→spine and spine→leaf traversals) + 2
 longer cables:
 
-  per-extra-hop ≈ (L_inter − L_intra) / 2  ≈ (1.81 − 1.26) / 2 ≈ **~0.28 µs**  (one-way basis)
-  cross-check from read RTT: (3.54 − 2.39) / 4 ≈ **~0.29 µs**  ✓ (consistent)
+  per-extra-hop ≈ (L_inter − L_intra) / 2  ≈ (1.70 − 1.21) / 2 ≈ **~0.24 µs**  (median basis)
+  range over the 6 pairs: (1.64…1.81 − ~1.2)/2 ≈ **0.22–0.30 µs** per hop
+  cross-check from read RTT: (3.3 − 2.3) / 4 ≈ **~0.25 µs**  ✓ (consistent)
 
-So each extra hop adds **~0.28 µs end-to-end** = QM87xx switch ASIC (~0.09–0.13 µs port-to-port,
+So each extra hop adds **~0.24 µs end-to-end** = QM87xx switch ASIC (~0.09–0.13 µs port-to-port,
 vendor spec) **plus** the leaf↔spine cable propagation + store-and-forward, which dominates the
 remainder (~0.15–0.18 µs). That points to relatively **long leaf↔spine links** (tens of metres of
 AOC fibre across the machine room) rather than short in-rack DAC — consistent with spine switches
@@ -84,13 +129,57 @@ sitting in separate racks/rows from the leaves.
 > measured value (1.81 µs, ~0.28 µs/hop) is ~0.1–0.3 µs higher — the inference under-counted the
 > leaf↔spine cable/store-and-forward contribution. The measured numbers above supersede it.
 
-## Method notes
-- Measured with `ib_write_lat` (RDMA write, lowest), `ib_send_lat` (send/recv), `ib_read_lat`.
-  These report one-way ≈ half-round-trip latency at the verbs level (excludes MPI overhead).
-- Intra-leaf pair and inter-leaf pair chosen from `/etc/slurm/topology.conf` leaf membership.
-- SM/MAD tools remain blocked (see topology report), so switch-internal latency counters
-  (e.g. per-port) are not directly readable; switch latency taken from vendor spec + the
-  intra-vs-inter empirical difference.
+## Measurement methodology
+
+### Tool & transport
+All numbers are from **`perftest`** (`/usr/bin/ib_write_lat`, `ib_send_lat`, `ib_read_lat`) over
+**RDMA on IB device `mlx5_0`** (HDR100). Each test is a server/client pair: server starts on one
+node, client connects to it by hostname. The QP-setup handshake uses TCP (management net); the
+timed data path is pure RDMA over InfiniBand. Processes were placed with Slurm `srun -N1 -n1 -w
+<node>`. Verbs-level latency — excludes MPI library overhead.
+
+### The three tools (what differs)
+| Tool | IB semantic | Remote CPU? | What it reports |
+|------|-------------|-------------|-----------------|
+| `ib_write_lat` | RDMA Write (one-sided) | not involved | ping-pong ÷2 → **one-way** (purest HW number) |
+| `ib_send_lat`  | Send/Recv (two-sided)  | posts a recv buffer | ping-pong ÷2 → **one-way** (real MPI-style messaging; ~10 ns more than write) |
+| `ib_read_lat`  | RDMA Read (one-sided)  | not involved | a read *is* a request→response, so → **full round-trip** (≈ 2× one-way; consistency check) |
+
+So **write ≈ send ≈ one-way latency**, **read ≈ round-trip**. Write is the lowest (no remote CPU);
+send adds the receive-side match; read ≈ 2× confirms the one-way figures.
+
+### Parameters & sample sizes
+- **2-byte** messages (latency is message-size-independent at this scale), **20,000 iterations**
+  per call, 1 QP. perftest reports min / **typical** / avg / 99% / 99.9% over those 20k iters — so
+  each headline number is already a robust statistic, not a single ping.
+
+### Exactly which nodes / jobs / runs
+The headline intra (b8-44↔b8-45, job 19810191) and the **6 inter-leaf leaf-pairs** (jobs 19815726
+and 19906266) are tabulated in the "Empirical results" section above, each with the exact nodes
+and leaf GUIDs. Plus **8 extra intra-leaf** baselines on different leaves (1.11–1.44 µs).
+
+- **Coverage:** intra-leaf measured on **9 leaves**; inter-leaf on **6 distinct leaf-pairs** — a
+  good spatial sample of the fabric (not just one pair). Still *not* covered: the many-pairs spine
+  **bisection** test (needs many concurrent inter-leaf flows; see `ibcong2.sh`).
+- **Per-leaf-pair variation is real:** inter-leaf spans 1.64–1.81 µs depending on which two leaves
+  (cable length to the spine differs); intra-leaf 1.11–1.44 µs depending on node/leaf.
+- Hostnames can mislead — e.g. the `compute-b6-18`↔`compute-b6-45` inter pair are both `b6-*` but
+  on **different leaves** (b6-1–20→d55ba6, b6-21–60→d85ae0). Every pair is leaf-verified in the job
+  (`[VERIFIED inter/intra]` lines in the result files) rather than assumed from hostname.
+
+### Lesson: how to get a cross-leaf allocation depends on cluster load
+- **Saturated cluster** (free nodes scarce, ~1/leaf): the adaptive-`--exclude` self-resubmit
+  (`interleaf_job.sh`) works well — scattered free nodes are *forced* to span leaves.
+- **Empty cluster** (every leaf has many free): that same trick *fails* — Slurm can always pack
+  `-N` onto one leaf, so the exclude list walks through every leaf without spanning. Here the fix
+  is the opposite: **pin** nodes the picker found on distinct leaves (they're idle, so pinning just
+  works). The 6-pair run used `pick_cross_leaf_pair.sh 6` → `sbatch --nodelist=… interleaf_multi.sh`.
+  (Gotcha: don't pin a node on a leaf the job `--exclude`s, e.g. d85b00 — Slurm rejects it.)
+
+### Other notes
+- Intra/inter pairs chosen from `/etc/slurm/topology.conf` leaf membership.
+- SM/MAD tools remain blocked (see topology report), so per-port switch latency counters aren't
+  readable; switch latency comes from vendor spec + the intra-vs-inter empirical difference.
 
 ---
 
