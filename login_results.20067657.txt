@@ -1,0 +1,20 @@
+# login<->compute  login_dev=mlx5_2  login-3.zaratan.umd.edu  Mon Jun  8 23:06:38 EDT 2026
+### login <-> compute-b5-21 (leaf d85800, ip 192.168.129.141, dev mlx5_0) ###
+login-d85800  ib_write_lat  t_typical=1.73 us t_avg=1.75 us
+login-d85800  ib_send_lat   t_typical=1.74 us t_avg=1.75 us
+login-d85800  ib_read_lat   t_typical=3.41 us t_avg=3.42 us
+login-d85800  ib_write_bw unidir BW_avg=97.36 Gb/s
+login-d85800  ib_write_bw -b     BW_avg=195.61 Gb/s
+### login <-> compute-b8-3 (leaf d55b66, ip 192.168.130.63, dev mlx5_0) ###
+login-d55b66  ib_write_lat  t_typical=1.72 us t_avg=1.74 us
+login-d55b66  ib_send_lat   t_typical=1.71 us t_avg=2.05 us
+login-d55b66  ib_read_lat   t_typical=3.28 us t_avg=3.29 us
+login-d55b66  ib_write_bw unidir BW_avg=93.75 Gb/s
+login-d55b66  ib_write_bw -b     BW_avg=185.53 Gb/s
+### login <-> compute-b8-26 (leaf d85b00, ip 192.168.130.86, dev mlx5_0) ###
+login-d85b00  ib_write_lat  t_typical=1.71 us t_avg=1.74 us
+login-d85b00  ib_send_lat   t_typical=1.63 us t_avg=1.66 us
+login-d85b00  ib_read_lat   t_typical=3.33 us t_avg=3.35 us
+login-d85b00  ib_write_bw unidir BW_avg=98.66 Gb/s
+login-d85b00  ib_write_bw -b     BW_avg=196.42 Gb/s
+=== DONE -> login_results.20067657.txt ===

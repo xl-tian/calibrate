@@ -1,0 +1,195 @@
++ DEV=mlx5_0
++ NODES=($(scontrol show hostnames "$SLURM_JOB_NODELIST"))
+++ scontrol show hostnames 'compute-a5-[3,5-7]'
++ echo '=== ALLOCATED: compute-a5-3' compute-a5-5 compute-a5-6 'compute-a5-7 ==='
+=== ALLOCATED: compute-a5-3 compute-a5-5 compute-a5-6 compute-a5-7 ===
++ TOP=/etc/slurm/topology.conf
++ declare -A LEAF
++ for n in "${NODES[@]}"
+++ leaf_of compute-a5-3
+++ awk -v node=compute-a5-3 '/^SwitchName=.*Nodes=/ && !/Switches=/{sw=$1;sub(/SwitchName=/,"",sw);nl=$2;sub(/Nodes=/,"",nl);cmd="scontrol show hostnames "nl" 2>/dev/null";while((cmd|getline h)>0){if(h==node){print sw;exit}}close(cmd)}' /etc/slurm/topology.conf
++ LEAF[$n]=b8cef60300d85b40
++ echo 'leaf compute-a5-3 = b8cef60300d85b40'
+leaf compute-a5-3 = b8cef60300d85b40
++ for n in "${NODES[@]}"
+++ leaf_of compute-a5-5
+++ awk -v node=compute-a5-5 '/^SwitchName=.*Nodes=/ && !/Switches=/{sw=$1;sub(/SwitchName=/,"",sw);nl=$2;sub(/Nodes=/,"",nl);cmd="scontrol show hostnames "nl" 2>/dev/null";while((cmd|getline h)>0){if(h==node){print sw;exit}}close(cmd)}' /etc/slurm/topology.conf
++ LEAF[$n]=b8cef60300d85b40
++ echo 'leaf compute-a5-5 = b8cef60300d85b40'
+leaf compute-a5-5 = b8cef60300d85b40
++ for n in "${NODES[@]}"
+++ leaf_of compute-a5-6
+++ awk -v node=compute-a5-6 '/^SwitchName=.*Nodes=/ && !/Switches=/{sw=$1;sub(/SwitchName=/,"",sw);nl=$2;sub(/Nodes=/,"",nl);cmd="scontrol show hostnames "nl" 2>/dev/null";while((cmd|getline h)>0){if(h==node){print sw;exit}}close(cmd)}' /etc/slurm/topology.conf
++ LEAF[$n]=b8cef60300d85b40
++ echo 'leaf compute-a5-6 = b8cef60300d85b40'
+leaf compute-a5-6 = b8cef60300d85b40
++ for n in "${NODES[@]}"
+++ leaf_of compute-a5-7
+++ awk -v node=compute-a5-7 '/^SwitchName=.*Nodes=/ && !/Switches=/{sw=$1;sub(/SwitchName=/,"",sw);nl=$2;sub(/Nodes=/,"",nl);cmd="scontrol show hostnames "nl" 2>/dev/null";while((cmd|getline h)>0){if(h==node){print sw;exit}}close(cmd)}' /etc/slurm/topology.conf
++ LEAF[$n]=b8cef60300d85b40
++ echo 'leaf compute-a5-7 = b8cef60300d85b40'
+leaf compute-a5-7 = b8cef60300d85b40
++ S=compute-a5-3
++ C=compute-a5-5
++ echo 'PAIR: server=compute-a5-3 client=compute-a5-5  leaves=b8cef60300d85b40 / b8cef60300d85b40'
+PAIR: server=compute-a5-3 client=compute-a5-5  leaves=b8cef60300d85b40 / b8cef60300d85b40
++ '[' b8cef60300d85b40 = b8cef60300d85b40 ']'
++ KIND=INTRA-LEAF
++ echo 'PAIR KIND = INTRA-LEAF'
+PAIR KIND = INTRA-LEAF
++ echo '##### 1) Unidirectional single flow (INTRA-LEAF) #####'
+##### 1) Unidirectional single flow (INTRA-LEAF) #####
++ sleep 5
++ srun --overlap --nodes=1 --ntasks=1 -w compute-a5-3 bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -s 1048576 -n 10000 -q 4 -p 20000'
++ srun --overlap --nodes=1 --ntasks=1 -w compute-a5-5 bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -s 1048576 -n 10000 -q 4 -p 20000 compute-a5-3 | awk '\''/1048576/{print "UNIDIR avgBW=" $4 " Gb/s"}'\'''
+
+************************************
+* Waiting for client to connect... *
+************************************
+---------------------------------------------------------------------------------------
+                    RDMA_Write BW Test
+ Dual-port       : OFF		Device         : mlx5_0
+ Number of qps   : 4		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+ PCIe relax order: ON		Lock-free      : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ CQ Moderation   : 1
+ CQE Poll Batch  : Dynamic
+ Mtu             : 4096[B]
+ Link type       : IB
+ Max inline data : 0[B]
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0x1d8 QPN 0x43fb PSN 0x3a9a6d RKey 0x0a6e00 VAddr 0x00148018c05000
+ local address: LID 0x1d8 QPN 0x43fc PSN 0xf51853 RKey 0x0a6e00 VAddr 0x00148018d05000
+ local address: LID 0x1d8 QPN 0x43fd PSN 0x2b6ea1 RKey 0x0a6e00 VAddr 0x00148018e05000
+ local address: LID 0x1d8 QPN 0x43fe PSN 0x755fdc RKey 0x0a6e00 VAddr 0x00148018f05000
+ remote address: LID 0x1cf QPN 0x9fff PSN 0xcf39a2 RKey 0x48ee00 VAddr 0x00147508b29000
+ remote address: LID 0x1cf QPN 0xa000 PSN 0x98f31b RKey 0x48ee00 VAddr 0x00147508c29000
+ remote address: LID 0x1cf QPN 0xa001 PSN 0x68d293 RKey 0x48ee00 VAddr 0x00147508d29000
+ remote address: LID 0x1cf QPN 0xa002 PSN 0x5e6af RKey 0x48ee00 VAddr 0x00147508e29000
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[Gb/sec]    BW average[Gb/sec]   MsgRate[Mpps]
+ 1048576    40000            98.53              98.19  		     0.011705
+---------------------------------------------------------------------------------------
+UNIDIR avgBW=98.19 Gb/s
++ wait
++ sleep 2
++ echo '##### 2) BIDIRECTIONAL single flow (full-duplex, -b) #####'
+##### 2) BIDIRECTIONAL single flow (full-duplex, -b) #####
++ sleep 5
++ srun --overlap --nodes=1 --ntasks=1 -w compute-a5-3 bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -b -s 1048576 -n 10000 -q 4 -p 20010'
++ srun --overlap --nodes=1 --ntasks=1 -w compute-a5-5 bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -b -s 1048576 -n 10000 -q 4 -p 20010 compute-a5-3 | awk '\''/1048576/{print "BIDIR  avgBW=" $4 " Gb/s (sum of both directions)"}'\'''
+
+************************************
+* Waiting for client to connect... *
+************************************
+---------------------------------------------------------------------------------------
+                    RDMA_Write Bidirectional BW Test
+ Dual-port       : OFF		Device         : mlx5_0
+ Number of qps   : 4		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+ PCIe relax order: ON		Lock-free      : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ TX depth        : 128
+ CQ Moderation   : 1
+ CQE Poll Batch  : Dynamic
+ Mtu             : 4096[B]
+ Link type       : IB
+ Max inline data : 0[B]
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0x1d8 QPN 0x43ff PSN 0xd22e35 RKey 0x0a6e00 VAddr 0x00151882904000
+ local address: LID 0x1d8 QPN 0x4400 PSN 0xa4b47b RKey 0x0a6e00 VAddr 0x00151882a04000
+ local address: LID 0x1d8 QPN 0x4401 PSN 0x1cdba9 RKey 0x0a6e00 VAddr 0x00151882b04000
+ local address: LID 0x1d8 QPN 0x4402 PSN 0x95fc44 RKey 0x0a6e00 VAddr 0x00151882c04000
+ remote address: LID 0x1cf QPN 0xa003 PSN 0xd76053 RKey 0x48ee00 VAddr 0x001516695b4000
+ remote address: LID 0x1cf QPN 0xa004 PSN 0x89ff41 RKey 0x48ee00 VAddr 0x001516696b4000
+ remote address: LID 0x1cf QPN 0xa005 PSN 0x7395f7 RKey 0x48ee00 VAddr 0x001516697b4000
+ remote address: LID 0x1cf QPN 0xa006 PSN 0xcd637a RKey 0x48ee00 VAddr 0x001516698b4000
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[Gb/sec]    BW average[Gb/sec]   MsgRate[Mpps]
+BIDIR  avgBW=191.81 Gb/s (sum of both directions)
+ 1048576    40000            193.66             191.81 		     0.022866
+---------------------------------------------------------------------------------------
++ wait
++ sleep 2
++ '[' 4 -ge 4 ']'
++ S2=compute-a5-6
++ C2=compute-a5-7
++ echo '##### 3) TWO concurrent flows: compute-a5-3<-compute-a5-5 and compute-a5-6<-compute-a5-7 (leaves b8cef60300d85b40,b8cef60300d85b40) #####'
+##### 3) TWO concurrent flows: compute-a5-3<-compute-a5-5 and compute-a5-6<-compute-a5-7 (leaves b8cef60300d85b40,b8cef60300d85b40) #####
++ srun --overlap --nodes=1 --ntasks=1 -w compute-a5-3 bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -s 1048576 -n 20000 -q 4 -p 20020'
++ sleep 6
++ srun --overlap --nodes=1 --ntasks=1 -w compute-a5-6 bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -s 1048576 -n 20000 -q 4 -p 20021'
++ srun --overlap --nodes=1 --ntasks=1 -w compute-a5-5 bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -s 1048576 -n 20000 -q 4 -p 20020 compute-a5-3  | awk '\''/1048576/{print "CONCUR flowA avgBW=" $4 " Gb/s"}'\'''
++ wait
++ srun --overlap --nodes=1 --ntasks=1 -w compute-a5-7 bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -s 1048576 -n 20000 -q 4 -p 20021 compute-a5-6 | awk '\''/1048576/{print "CONCUR flowB avgBW=" $4 " Gb/s"}'\'''
+
+************************************
+* Waiting for client to connect... *
+************************************
+---------------------------------------------------------------------------------------
+                    RDMA_Write BW Test
+ Dual-port       : OFF		Device         : mlx5_0
+ Number of qps   : 4		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+ PCIe relax order: ON		Lock-free      : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ CQ Moderation   : 1
+ CQE Poll Batch  : Dynamic
+ Mtu             : 4096[B]
+ Link type       : IB
+ Max inline data : 0[B]
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0x1d7 QPN 0x35ec PSN 0x29b91c RKey 0x999400 VAddr 0x001479fe33d000
+ local address: LID 0x1d7 QPN 0x35ed PSN 0xaa62d6 RKey 0x999400 VAddr 0x001479fe43d000
+ local address: LID 0x1d7 QPN 0x35ee PSN 0x11da68 RKey 0x999400 VAddr 0x001479fe53d000
+ local address: LID 0x1d7 QPN 0x35ef PSN 0xda0d97 RKey 0x999400 VAddr 0x001479fe63d000
+ remote address: LID 0x1d9 QPN 0x1b670 PSN 0x2b6383 RKey 0x6c8500 VAddr 0x00148668183000
+ remote address: LID 0x1d9 QPN 0x1b671 PSN 0x6c7ab1 RKey 0x6c8500 VAddr 0x00148668283000
+ remote address: LID 0x1d9 QPN 0x1b672 PSN 0x8c4a7 RKey 0x6c8500 VAddr 0x00148668383000
+ remote address: LID 0x1d9 QPN 0x1b673 PSN 0x84646a RKey 0x6c8500 VAddr 0x00148668483000
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[Gb/sec]    BW average[Gb/sec]   MsgRate[Mpps]
+ 1048576    80000            97.91              97.89  		     0.011669
+---------------------------------------------------------------------------------------
+CONCUR flowB avgBW=97.89 Gb/s
+
+************************************
+* Waiting for client to connect... *
+************************************
+---------------------------------------------------------------------------------------
+                    RDMA_Write BW Test
+ Dual-port       : OFF		Device         : mlx5_0
+ Number of qps   : 4		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+ PCIe relax order: ON		Lock-free      : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ CQ Moderation   : 1
+ CQE Poll Batch  : Dynamic
+ Mtu             : 4096[B]
+ Link type       : IB
+ Max inline data : 0[B]
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ local address: LID 0x1d8 QPN 0x4403 PSN 0x9da3e2 RKey 0x0a6e00 VAddr 0x00149f0d384000
+ local address: LID 0x1d8 QPN 0x4404 PSN 0x7b3d24 RKey 0x0a6e00 VAddr 0x00149f0d484000
+ local address: LID 0x1d8 QPN 0x4405 PSN 0x8e19e RKey 0x0a6e00 VAddr 0x00149f0d584000
+ local address: LID 0x1d8 QPN 0x4406 PSN 0x4aa395 RKey 0x0a6e00 VAddr 0x00149f0d684000
+ remote address: LID 0x1cf QPN 0xa008 PSN 0x567028 RKey 0x48ee00 VAddr 0x00148e001e2000
+ remote address: LID 0x1cf QPN 0xa009 PSN 0x391af2 RKey 0x48ee00 VAddr 0x00148e002e2000
+ remote address: LID 0x1cf QPN 0xa00a PSN 0xf6654 RKey 0x48ee00 VAddr 0x00148e003e2000
+ remote address: LID 0x1cf QPN 0xa00b PSN 0x14a913 RKey 0x48ee00 VAddr 0x00148e004e2000
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[Gb/sec]    BW average[Gb/sec]   MsgRate[Mpps]
+ 1048576    80000            98.30              98.12  		     0.011697
+---------------------------------------------------------------------------------------
+CONCUR flowA avgBW=98.12 Gb/s
++ echo '=== DONE ==='
+=== DONE ===

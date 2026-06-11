@@ -1,0 +1,10 @@
+=== allocation leaf map ===
+  compute-b7-11 -> b8cef60300d55b66
+  compute-b7-12 -> b8cef60300d55b66
+INTRA pair: compute-b7-11 <-> compute-b7-12
+INTER pair: none <-> none
+### INTRA-LEAF (1 hop) baseline ###
+INTRA-1hop  ib_write_lat  t_typical=1.31 us  t_avg=1.31 us
+INTRA-1hop  ib_send_lat   t_typical=1.26 us  t_avg=1.36 us
+INTRA-1hop  ib_write_bw unidir BW_avg=96.63 Gb/s
+[2026-06-06T02:11:48.714] error: *** JOB 19815373 ON compute-b7-11 CANCELLED AT 2026-06-06T02:11:48 DUE to SIGNAL Terminated ***

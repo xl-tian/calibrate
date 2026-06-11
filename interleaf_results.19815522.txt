@@ -1,0 +1,10 @@
+# inter-leaf measurement  job=19815522  Sat Jun  6 02:14:25 EDT 2026
+# allocation: compute-a8-30 compute-a8-39
+### INTRA-LEAF (1 hop) baseline ###
+INTRA-1hop  ib_write_lat  t_typical=1.31 us  t_avg=1.47 us
+INTRA-1hop  ib_send_lat   t_typical=1.15 us  t_avg=1.18 us
+INTRA-1hop  ib_read_lat   t_typical=2.14 us  t_avg=2.33 us
+INTRA-1hop  ib_write_bw unidir BW_avg=95.52 Gb/s
+INTRA-1hop  ib_write_bw -b     BW_avg=164.25 Gb/s
+WARNING: single-leaf alloc on b8cef60300d85ac0 (compute-a8-[21-60]); no inter pair (attempt 3/40).
+Excluding it too; resubmitting attempt 4 with --exclude=compute-b8-[21-52,54-60],compute-b5-[21-60],compute-b7-[21-60],compute-b7-[1-20],compute-b8-[1-20],gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1,compute-a8-[21-60]

@@ -1,0 +1,12 @@
+=== allocation leaf map ===
+  compute-b6-18 -> b8cef60300d55ba6
+  compute-b6-45 -> b8cef60300d85ae0
+INTRA pair: none <-> none
+INTER pair: compute-b6-18 <-> compute-b6-45
+### INTER-LEAF (3 hops: leaf->spine->leaf) ###
+INTER-3hop  ib_write_lat  t_typical=1.81 us  t_avg=1.90 us
+INTER-3hop  ib_send_lat   t_typical=1.81 us  t_avg=2.13 us
+INTER-3hop  ib_read_lat   t_typical=3.54 us  t_avg=3.70 us
+INTER-3hop  ib_write_bw unidir BW_avg=90.70 Gb/s
+INTER-3hop  ib_write_bw -b     BW_avg=186.02 Gb/s
+=== DONE (inter-leaf captured) -> interleaf_results.19815726.txt ===

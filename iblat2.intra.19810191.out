@@ -1,0 +1,170 @@
++ DEV=mlx5_0
++ TOP=/etc/slurm/topology.conf
+++ leaf_of compute-b8-44
+++ awk -v node=compute-b8-44 '/^SwitchName=.*Nodes=/ && !/Switches=/{sw=$1;sub(/SwitchName=/,"",sw);nl=$2;sub(/Nodes=/,"",nl);cmd="scontrol show hostnames "nl" 2>/dev/null";while((cmd|getline h)>0){if(h==node){print sw;exit}}close(cmd)}' /etc/slurm/topology.conf
+++ leaf_of compute-b8-45
+++ awk -v node=compute-b8-45 '/^SwitchName=.*Nodes=/ && !/Switches=/{sw=$1;sub(/SwitchName=/,"",sw);nl=$2;sub(/Nodes=/,"",nl);cmd="scontrol show hostnames "nl" 2>/dev/null";while((cmd|getline h)>0){if(h==node){print sw;exit}}close(cmd)}' /etc/slurm/topology.conf
++ echo 'LABEL=INTRA-1hop  server=compute-b8-44 (b8cef60300d85b00)  client=compute-b8-45 (b8cef60300d85b00)'
+LABEL=INTRA-1hop  server=compute-b8-44 (b8cef60300d85b00)  client=compute-b8-45 (b8cef60300d85b00)
++ run_lat ib_write_lat 22000
++ local TOOL=ib_write_lat P=22000
++ echo '########## ib_write_lat  INTRA-1hop : compute-b8-44 <-> compute-b8-45 ##########'
+########## ib_write_lat  INTRA-1hop : compute-b8-44 <-> compute-b8-45 ##########
++ sleep 4
++ srun --overlap --nodes=1 --ntasks=1 -w compute-b8-44 bash -lc 'ib_write_lat -d mlx5_0 -F -s 2 -n 20000 -p 22000'
++ srun --overlap --nodes=1 --ntasks=1 -w compute-b8-45 bash -lc 'ib_write_lat -d mlx5_0 -F -s 2 -n 20000 -p 22000 compute-b8-44'
+Disabling dynamic polling
+
+Disabling dynamic polling
+---------------------------------------------------------------------------------------
+************************************
+* Waiting for client to connect... *
+                    RDMA_Write Latency Test
+ Dual-port       : OFF		Device         : mlx5_0
+************************************
+---------------------------------------------------------------------------------------
+ Number of qps   : 1		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+                    RDMA_Write Latency Test
+ Dual-port       : OFF		Device         : mlx5_0
+ PCIe relax order: OFF		Lock-free      : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ Number of qps   : 1		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+ TX depth        : 1
+ Mtu             : 4096[B]
+ PCIe relax order: OFF		Lock-free      : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ Link type       : IB
+ Max inline data : 220[B]
+ Mtu             : 4096[B]
+ Link type       : IB
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+ Max inline data : 220[B]
+ rdma_cm QPs	 : OFF
+---------------------------------------------------------------------------------------
+ local address: LID 0x189 QPN 0x1febf PSN 0x4ea2a2 RKey 0x3cf5aa VAddr 0x00562968726000
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ remote address: LID 0x195 QPN 0x1f951 PSN 0x4dbb3 RKey 0x3b7d69 VAddr 0x0055d9e2bb9000
+---------------------------------------------------------------------------------------
+ local address: LID 0x195 QPN 0x1f951 PSN 0x4dbb3 RKey 0x3b7d69 VAddr 0x0055d9e2bb9000
+ remote address: LID 0x189 QPN 0x1febf PSN 0x4ea2a2 RKey 0x3cf5aa VAddr 0x00562968726000
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+ 2       20000          1.21           4.00         1.26     	       1.31        	0.06   		1.43    		2.87   
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+ 2       20000          1.22           4.62         1.26     	       1.30        	0.08   		1.42    		2.97   
+---------------------------------------------------------------------------------------
++ wait
++ sleep 1
++ run_lat ib_send_lat 22001
++ local TOOL=ib_send_lat P=22001
++ echo '########## ib_send_lat  INTRA-1hop : compute-b8-44 <-> compute-b8-45 ##########'
+########## ib_send_lat  INTRA-1hop : compute-b8-44 <-> compute-b8-45 ##########
++ sleep 4
++ srun --overlap --nodes=1 --ntasks=1 -w compute-b8-44 bash -lc 'ib_send_lat -d mlx5_0 -F -s 2 -n 20000 -p 22001'
++ srun --overlap --nodes=1 --ntasks=1 -w compute-b8-45 bash -lc 'ib_send_lat -d mlx5_0 -F -s 2 -n 20000 -p 22001 compute-b8-44'
+Disabling dynamic polling
+
+Disabling dynamic polling
+---------------------------------------------------------------------------------------
+************************************
+* Waiting for client to connect... *
+                    Send Latency Test
+ Dual-port       : OFF		Device         : mlx5_0
+************************************
+---------------------------------------------------------------------------------------
+ Number of qps   : 1		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+                    Send Latency Test
+ Dual-port       : OFF		Device         : mlx5_0
+ PCIe relax order: ON		Lock-free      : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ Number of qps   : 1		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+ TX depth        : 1
+ Mtu             : 4096[B]
+ PCIe relax order: ON		Lock-free      : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ Link type       : IB
+ Max inline data : 236[B]
+ RX depth        : 512
+ Mtu             : 4096[B]
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+ Link type       : IB
+ Max inline data : 236[B]
+---------------------------------------------------------------------------------------
+ local address: LID 0x189 QPN 0x1fec2 PSN 0xcc5a3f
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+ remote address: LID 0x195 QPN 0x1f952 PSN 0x50d549
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+ local address: LID 0x195 QPN 0x1f952 PSN 0x50d549
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+ remote address: LID 0x189 QPN 0x1fec2 PSN 0xcc5a3f
+---------------------------------------------------------------------------------------
+ 2       20000          1.24           5.67         1.27     	       1.29        	0.09   		1.39    		3.16   
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+ 2       20000          1.24           3.83         1.27     	       1.29        	0.07   		1.45    		2.98   
+---------------------------------------------------------------------------------------
++ wait
++ sleep 1
++ run_lat ib_read_lat 22002
++ local TOOL=ib_read_lat P=22002
++ echo '########## ib_read_lat  INTRA-1hop : compute-b8-44 <-> compute-b8-45 ##########'
+########## ib_read_lat  INTRA-1hop : compute-b8-44 <-> compute-b8-45 ##########
++ sleep 4
++ srun --overlap --nodes=1 --ntasks=1 -w compute-b8-44 bash -lc 'ib_read_lat -d mlx5_0 -F -s 2 -n 20000 -p 22002'
++ srun --overlap --nodes=1 --ntasks=1 -w compute-b8-45 bash -lc 'ib_read_lat -d mlx5_0 -F -s 2 -n 20000 -p 22002 compute-b8-44'
+Disabling dynamic polling
+---------------------------------------------------------------------------------------
+Disabling dynamic polling
+
+                    RDMA_Read Latency Test
+ Dual-port       : OFF		Device         : mlx5_0
+************************************
+* Waiting for client to connect... *
+ Number of qps   : 1		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+************************************
+---------------------------------------------------------------------------------------
+ PCIe relax order: ON		Lock-free      : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+                    RDMA_Read Latency Test
+ Dual-port       : OFF		Device         : mlx5_0
+ TX depth        : 1
+ Mtu             : 4096[B]
+ Number of qps   : 1		Transport type : IB
+ Connection type : RC		Using SRQ      : OFF
+ Link type       : IB
+ Outstand reads  : 16
+ PCIe relax order: ON		Lock-free      : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+ Mtu             : 4096[B]
+ Link type       : IB
+---------------------------------------------------------------------------------------
+ local address: LID 0x189 QPN 0x1fec3 PSN 0x2116c3 OUT 0x10 RKey 0x006600 VAddr 0x00556754562000
+ Outstand reads  : 16
+ rdma_cm QPs	 : OFF
+ remote address: LID 0x195 QPN 0x1f953 PSN 0xc5763c OUT 0x10 RKey 0x005d00 VAddr 0x0055f56a391000
+---------------------------------------------------------------------------------------
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ #bytes #iterations    t_min[usec]    t_max[usec]  t_typical[usec]    t_avg[usec]    t_stdev[usec]   99% percentile[usec]   99.9% percentile[usec] 
+ 2       20000          2.35           8.56         2.39     	       2.41        	0.13   		2.45    		5.56   
+ local address: LID 0x195 QPN 0x1f953 PSN 0xc5763c OUT 0x10 RKey 0x005d00 VAddr 0x0055f56a391000
+ remote address: LID 0x189 QPN 0x1fec3 PSN 0x2116c3 OUT 0x10 RKey 0x006600 VAddr 0x00556754562000
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
++ wait
++ sleep 1
++ echo '=== DONE INTRA-1hop ==='
+=== DONE INTRA-1hop ===

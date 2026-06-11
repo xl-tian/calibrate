@@ -1,0 +1,12 @@
+=== allocation: compute-a5-3 compute-a5-5 compute-a5-7 compute-a5-8 compute-a5-9 compute-a5-10 ===
+  leaf b8cef60300d85b40 : compute-a5-3 compute-a5-5 compute-a5-7 compute-a5-8 compute-a5-9 compute-a5-10
+INTRA pair: compute-a5-3 <-> compute-a5-5
+INTER pairs (0):
+### INTRA-LEAF (1 hop)  b8cef60300d85b40 ###
+  [VERIFIED intra] compute-a5-3 and compute-a5-5 BOTH on leaf b8cef60300d85b40
+INTRA d85b40 compute-a5-3/compute-a5-5 ib_write_lat  t_typical=1.44 us  t_avg=1.46 us
+INTRA d85b40 compute-a5-3/compute-a5-5 ib_send_lat   t_typical=1.48 us  t_avg=1.50 us
+INTRA d85b40 compute-a5-3/compute-a5-5 ib_read_lat   t_typical=2.56 us  t_avg=2.58 us
+WARNING: single-leaf alloc on b8cef60300d85b40 (gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1); no inter pair (attempt 1/40).
+Resubmitting attempt 2 with --exclude=compute-b8-[21-52,54-60],gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1
+Submitted batch job 19905982

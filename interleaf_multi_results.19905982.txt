@@ -1,0 +1,9 @@
+# multi-pair inter-leaf latency  job=19905982  Sun Jun  7 17:35:36 EDT 2026
+# allocation: compute-a8-39 compute-a8-47 compute-a8-48 compute-a8-49 compute-a8-50 compute-a8-51
+### INTRA-LEAF (1 hop)  b8cef60300d85ac0 ###
+  [VERIFIED intra] compute-a8-39 and compute-a8-47 BOTH on leaf b8cef60300d85ac0
+INTRA d85ac0 compute-a8-39/compute-a8-47 ib_write_lat  t_typical=1.11 us  t_avg=1.17 us
+INTRA d85ac0 compute-a8-39/compute-a8-47 ib_send_lat   t_typical=1.13 us  t_avg=1.14 us
+INTRA d85ac0 compute-a8-39/compute-a8-47 ib_read_lat   t_typical=2.11 us  t_avg=2.12 us
+WARNING: single-leaf alloc on b8cef60300d85ac0 (compute-a8-[21-60]); no inter pair (attempt 2/40).
+Resubmitting attempt 3 with --exclude=compute-b8-[21-52,54-60],gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1,compute-a8-[21-60]

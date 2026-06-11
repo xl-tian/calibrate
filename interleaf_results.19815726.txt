@@ -1,0 +1,8 @@
+# inter-leaf measurement  job=19815726  Sat Jun  6 02:17:25 EDT 2026
+# allocation: compute-b6-18 compute-b6-45
+### INTER-LEAF (3 hops: leaf->spine->leaf) ###
+INTER-3hop  ib_write_lat  t_typical=1.81 us  t_avg=1.90 us
+INTER-3hop  ib_send_lat   t_typical=1.81 us  t_avg=2.13 us
+INTER-3hop  ib_read_lat   t_typical=3.54 us  t_avg=3.70 us
+INTER-3hop  ib_write_bw unidir BW_avg=90.70 Gb/s
+INTER-3hop  ib_write_bw -b     BW_avg=186.02 Gb/s

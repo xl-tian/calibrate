@@ -1,0 +1,14 @@
+=== allocation leaf map ===
+  compute-a5-3 -> b8cef60300d85b40
+  compute-a5-5 -> b8cef60300d85b40
+INTRA pair: compute-a5-3 <-> compute-a5-5
+INTER pair: none <-> none
+### INTRA-LEAF (1 hop) baseline ###
+INTRA-1hop  ib_write_lat  t_typical=1.33 us  t_avg=1.38 us
+INTRA-1hop  ib_send_lat   t_typical=1.37 us  t_avg=1.42 us
+INTRA-1hop  ib_read_lat   t_typical=2.53 us  t_avg=2.66 us
+INTRA-1hop  ib_write_bw unidir BW_avg=97.14 Gb/s
+INTRA-1hop  ib_write_bw -b     BW_avg=170.43 Gb/s
+WARNING: single-leaf alloc on b8cef60300d85b40 (gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1); no inter pair (attempt 2/40).
+Excluding it too; resubmitting attempt 3 with --exclude=compute-b8-[21-52,54-60],compute-b5-[21-60],compute-b7-[21-60],compute-b7-[1-20],compute-b8-[1-20],gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1
+Submitted batch job 19815522

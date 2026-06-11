@@ -1,0 +1,307 @@
++ echo '=== ALLOCATED: compute-a5-[5-8] ==='
+=== ALLOCATED: compute-a5-[5-8] ===
+++ scontrol show hostnames 'compute-a5-[5-8]'
++ NODES='compute-a5-5
+compute-a5-6
+compute-a5-7
+compute-a5-8'
++ echo 'compute-a5-5
+compute-a5-6
+compute-a5-7
+compute-a5-8'
+compute-a5-5
+compute-a5-6
+compute-a5-7
+compute-a5-8
++ TOP=/etc/slurm/topology.conf
++ declare -A LEAF
++ for n in $NODES
+++ leaf_of compute-a5-5
+++ local n=compute-a5-5
+++ read -r line
++++ grep -v '^SwitchName=top' /etc/slurm/topology.conf
+++ case "$line" in
+++ read -r line
+++ case "$line" in
+++ read -r line
+++ case "$line" in
++++ sed -E 's/SwitchName=([^ ]+).*/\1/'
++++ echo 'SwitchName=b8cef60300d85b40 Nodes=gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ sw=b8cef60300d85b40
++++ sed -E 's/.*Nodes=([^ ]+).*/\1/'
++++ echo 'SwitchName=b8cef60300d85b40 Nodes=gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ nl='gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ grep -qx compute-a5-5
+++ scontrol show hostnames 'gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ echo b8cef60300d85b40
+++ return
++ LEAF[$n]=b8cef60300d85b40
++ echo 'node compute-a5-5 -> leaf b8cef60300d85b40'
+node compute-a5-5 -> leaf b8cef60300d85b40
++ for n in $NODES
+++ leaf_of compute-a5-6
+++ local n=compute-a5-6
+++ read -r line
++++ grep -v '^SwitchName=top' /etc/slurm/topology.conf
+++ case "$line" in
+++ read -r line
+++ case "$line" in
+++ read -r line
+++ case "$line" in
++++ sed -E 's/SwitchName=([^ ]+).*/\1/'
++++ echo 'SwitchName=b8cef60300d85b40 Nodes=gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ sw=b8cef60300d85b40
++++ sed -E 's/.*Nodes=([^ ]+).*/\1/'
++++ echo 'SwitchName=b8cef60300d85b40 Nodes=gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ nl='gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ grep -qx compute-a5-6
+++ scontrol show hostnames 'gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ echo b8cef60300d85b40
+++ return
++ LEAF[$n]=b8cef60300d85b40
++ echo 'node compute-a5-6 -> leaf b8cef60300d85b40'
+node compute-a5-6 -> leaf b8cef60300d85b40
++ for n in $NODES
+++ leaf_of compute-a5-7
+++ local n=compute-a5-7
+++ read -r line
++++ grep -v '^SwitchName=top' /etc/slurm/topology.conf
+++ case "$line" in
+++ read -r line
+++ case "$line" in
+++ read -r line
+++ case "$line" in
++++ sed -E 's/SwitchName=([^ ]+).*/\1/'
++++ echo 'SwitchName=b8cef60300d85b40 Nodes=gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ sw=b8cef60300d85b40
++++ sed -E 's/.*Nodes=([^ ]+).*/\1/'
++++ echo 'SwitchName=b8cef60300d85b40 Nodes=gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ nl='gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ grep -qx compute-a5-7
+++ scontrol show hostnames 'gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ echo b8cef60300d85b40
+++ return
++ LEAF[$n]=b8cef60300d85b40
++ echo 'node compute-a5-7 -> leaf b8cef60300d85b40'
+node compute-a5-7 -> leaf b8cef60300d85b40
++ for n in $NODES
+++ leaf_of compute-a5-8
+++ local n=compute-a5-8
+++ read -r line
++++ grep -v '^SwitchName=top' /etc/slurm/topology.conf
+++ case "$line" in
+++ read -r line
+++ case "$line" in
+++ read -r line
+++ case "$line" in
++++ sed -E 's/SwitchName=([^ ]+).*/\1/'
++++ echo 'SwitchName=b8cef60300d85b40 Nodes=gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ sw=b8cef60300d85b40
++++ sed -E 's/.*Nodes=([^ ]+).*/\1/'
++++ echo 'SwitchName=b8cef60300d85b40 Nodes=gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ nl='gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ grep -qx compute-a5-8
+++ scontrol show hostnames 'gpu-a6-[2-9],compute-a5-[3-11],gpu-a5-1'
+++ echo b8cef60300d85b40
+++ return
++ LEAF[$n]=b8cef60300d85b40
++ echo 'node compute-a5-8 -> leaf b8cef60300d85b40'
+node compute-a5-8 -> leaf b8cef60300d85b40
++ SRV=
++ INTRA=
++ INTER=
++ arr=($NODES)
++ (( i=0 ))
++ (( i<4 ))
++ (( j=i+1 ))
++ (( j<4 ))
++ a=compute-a5-5
++ b=compute-a5-6
++ '[' b8cef60300d85b40 = b8cef60300d85b40 ']'
++ '[' -z '' ']'
++ SRV=compute-a5-5
++ INTRA=compute-a5-6
++ '[' b8cef60300d85b40 '!=' b8cef60300d85b40 ']'
++ (( j++ ))
++ (( j<4 ))
++ a=compute-a5-5
++ b=compute-a5-7
++ '[' b8cef60300d85b40 = b8cef60300d85b40 ']'
++ '[' -z compute-a5-6 ']'
++ '[' b8cef60300d85b40 '!=' b8cef60300d85b40 ']'
++ (( j++ ))
++ (( j<4 ))
++ a=compute-a5-5
++ b=compute-a5-8
++ '[' b8cef60300d85b40 = b8cef60300d85b40 ']'
++ '[' -z compute-a5-6 ']'
++ '[' b8cef60300d85b40 '!=' b8cef60300d85b40 ']'
++ (( j++ ))
++ (( j<4 ))
++ (( i++ ))
++ (( i<4 ))
++ (( j=i+1 ))
++ (( j<4 ))
++ a=compute-a5-6
++ b=compute-a5-7
++ '[' b8cef60300d85b40 = b8cef60300d85b40 ']'
++ '[' -z compute-a5-6 ']'
++ '[' b8cef60300d85b40 '!=' b8cef60300d85b40 ']'
++ (( j++ ))
++ (( j<4 ))
++ a=compute-a5-6
++ b=compute-a5-8
++ '[' b8cef60300d85b40 = b8cef60300d85b40 ']'
++ '[' -z compute-a5-6 ']'
++ '[' b8cef60300d85b40 '!=' b8cef60300d85b40 ']'
++ (( j++ ))
++ (( j<4 ))
++ (( i++ ))
++ (( i<4 ))
++ (( j=i+1 ))
++ (( j<4 ))
++ a=compute-a5-7
++ b=compute-a5-8
++ '[' b8cef60300d85b40 = b8cef60300d85b40 ']'
++ '[' -z compute-a5-6 ']'
++ '[' b8cef60300d85b40 '!=' b8cef60300d85b40 ']'
++ (( j++ ))
++ (( j<4 ))
++ (( i++ ))
++ (( i<4 ))
++ (( j=i+1 ))
++ (( j<4 ))
++ (( i++ ))
++ (( i<4 ))
++ '[' -z compute-a5-5 ']'
++ echo 'INTRA pair: compute-a5-5 <-> compute-a5-6   (leaf b8cef60300d85b40)'
+INTRA pair: compute-a5-5 <-> compute-a5-6   (leaf b8cef60300d85b40)
+/var/spool/slurmd/job19806741/slurm_script: line 41: LEAF: bad array subscript
+/var/spool/slurmd/job19806741/slurm_script: line 41: LEAF: bad array subscript
++ echo 'INTER pair:  <->    (leaves  / )'
+INTER pair:  <->    (leaves  / )
+++ srun --nodes=1 --ntasks=1 -w compute-a5-5 bash -lc 'for d in $(ibstat -l); do [ "$(cat /sys/class/infiniband/$d/ports/1/link_layer 2>/dev/null)" = InfiniBand ] && echo $d && break; done'
++ DEV=mlx5_0
++ echo '=== IB DEVICE = mlx5_0 ==='
+=== IB DEVICE = mlx5_0 ===
++ echo '##### ibstat / ibv_devinfo on compute-a5-5 #####'
+##### ibstat / ibv_devinfo on compute-a5-5 #####
++ srun --nodes=1 --ntasks=1 -w compute-a5-5 bash -lc 'ibstat; echo ===devinfo===; ibv_devinfo -v 2>/dev/null | grep -iE "board_id|fw_ver|active_width|active_speed|link_layer|phys_state|node_desc"'
+CA 'mlx5_0'
+	CA type: MT4123
+	Number of ports: 1
+	Firmware version: 20.39.1002
+	Hardware version: 0
+	Node GUID: 0x1c34da030054c758
+	System image GUID: 0x1c34da030054c758
+	Port 1:
+		State: Active
+		Physical state: LinkUp
+		Rate: 100
+		Base lid: 463
+		LMC: 0
+		SM lid: 32
+		Capability mask: 0xa651e848
+		Port GUID: 0x1c34da030054c758
+		Link layer: InfiniBand
+===devinfo===
+	fw_ver:				20.39.1002
+	board_id:			DEL0000000010
+			link_layer:		InfiniBand
+			active_width:		2X (16)
+			active_speed:		50.0 Gbps (64)
+			phys_state:		LINK_UP (5)
++ echo '##### Fabric discovery attempts from compute node #####'
+##### Fabric discovery attempts from compute node #####
++ srun --nodes=1 --ntasks=1 -w compute-a5-5 bash -lc 'echo --iblinkinfo--; timeout 50 iblinkinfo 2>&1 | head -120; echo --ibnetdiscover-counts--; timeout 50 ibnetdiscover 2>&1 | grep -ciE "^Switch"; echo --sminfo--; sminfo 2>&1; echo --saquery-SWITCHES--; timeout 30 saquery SWITCHES 2>&1 | head -30'
+--iblinkinfo--
+ibwarn: [3110418] get_smi_gsi_pair: Can't open SMI UMAD port (Input/output error) (mlx5_0:1)
+ibwarn: [3110418] mad_rpc_open_port2: can't open UMAD port ((null):0)
+Failed to open (null) port 0
+--ibnetdiscover-counts--
+0
+--sminfo--
+ibwarn: [3110422] get_smi_gsi_pair: Can't open SMI UMAD port (Input/output error) (mlx5_0:1)
+ibwarn: [3110422] mad_rpc_open_port2: can't open UMAD port ((null):0)
+sminfo: iberror: failed: Failed to open '(null)' port '0'
+--saquery-SWITCHES--
+ibwarn: [3110425] sa_get_handle: umad_open_port on port (null):0 failed
+ibpanic: [3110425] main: Failed to bind to the SA: Permission denied
++ run_bw INTRA-LEAF compute-a5-5 compute-a5-6
++ local LABEL=INTRA-LEAF S=compute-a5-5 C=compute-a5-6
++ '[' -z compute-a5-6 ']'
++ echo '########## ib_write_bw INTRA-LEAF : server=compute-a5-5 client=compute-a5-6 dev=mlx5_0 ##########'
+########## ib_write_bw INTRA-LEAF : server=compute-a5-5 client=compute-a5-6 dev=mlx5_0 ##########
++ local p=3110427
++ sleep 5
++ srun --nodes=1 --ntasks=1 -w compute-a5-5 bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -s 1048576 -n 5000 -q 4'
++ srun --nodes=1 --ntasks=1 -w compute-a5-6 bash -lc 'ib_write_bw -d mlx5_0 -F --report_gbits -s 1048576 -n 5000 -q 4 compute-a5-5'
+---------------------------------------------------------------------------------------
+                    RDMA_Write BW Test
+ Dual-port       : OFF		Device         : mlx5_0
+ Number of qps   : 4		Transport type : IB
+
+************************************
+ Connection type : RC		Using SRQ      : OFF
+ PCIe relax order: ON		Lock-free      : OFF
+* Waiting for client to connect... *
+************************************
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ TX depth        : 128
+---------------------------------------------------------------------------------------
+                    RDMA_Write BW Test
+ CQ Moderation   : 1
+ CQE Poll Batch  : Dynamic
+ Dual-port       : OFF		Device         : mlx5_0
+ Number of qps   : 4		Transport type : IB
+ Mtu             : 4096[B]
+ Link type       : IB
+ Connection type : RC		Using SRQ      : OFF
+ PCIe relax order: ON		Lock-free      : OFF
+ Max inline data : 0[B]
+ rdma_cm QPs	 : OFF
+ ibv_wr* API     : ON		Using Enhanced Reorder      : OFF
+ CQ Moderation   : 1
+ Data ex. method : Ethernet
+---------------------------------------------------------------------------------------
+ CQE Poll Batch  : Dynamic
+ Mtu             : 4096[B]
+ local address: LID 0x1d7 QPN 0x35bd PSN 0xb69237 RKey 0x98ec00 VAddr 0x0014c6e8757000
+ local address: LID 0x1d7 QPN 0x35c0 PSN 0xb888c RKey 0x98ec00 VAddr 0x0014c6e8857000
+ Link type       : IB
+ Max inline data : 0[B]
+ local address: LID 0x1d7 QPN 0x35c1 PSN 0xa1f9b0 RKey 0x98ec00 VAddr 0x0014c6e8957000
+ local address: LID 0x1d7 QPN 0x35c2 PSN 0x3b9c08 RKey 0x98ec00 VAddr 0x0014c6e8a57000
+ rdma_cm QPs	 : OFF
+ Data ex. method : Ethernet
+ remote address: LID 0x1cf QPN 0x9ffb PSN 0x88ddb4 RKey 0x512100 VAddr 0x0014826fd47000
+ remote address: LID 0x1cf QPN 0x9ffc PSN 0xa3fac5 RKey 0x512100 VAddr 0x0014826fe47000
+---------------------------------------------------------------------------------------
+ local address: LID 0x1cf QPN 0x9ffb PSN 0x88ddb4 RKey 0x512100 VAddr 0x0014826fd47000
+ remote address: LID 0x1cf QPN 0x9ffd PSN 0xb5d1f5 RKey 0x512100 VAddr 0x0014826ff47000
+ remote address: LID 0x1cf QPN 0x9ffe PSN 0x98af69 RKey 0x512100 VAddr 0x00148270047000
+ local address: LID 0x1cf QPN 0x9ffc PSN 0xa3fac5 RKey 0x512100 VAddr 0x0014826fe47000
+ local address: LID 0x1cf QPN 0x9ffd PSN 0xb5d1f5 RKey 0x512100 VAddr 0x0014826ff47000
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[Gb/sec]    BW average[Gb/sec]   MsgRate[Mpps]
+ local address: LID 0x1cf QPN 0x9ffe PSN 0x98af69 RKey 0x512100 VAddr 0x00148270047000
+ remote address: LID 0x1d7 QPN 0x35bd PSN 0xb69237 RKey 0x98ec00 VAddr 0x0014c6e8757000
+ 1048576    20000            98.23              98.17  		     0.011703
+---------------------------------------------------------------------------------------
+ remote address: LID 0x1d7 QPN 0x35c0 PSN 0xb888c RKey 0x98ec00 VAddr 0x0014c6e8857000
+ remote address: LID 0x1d7 QPN 0x35c1 PSN 0xa1f9b0 RKey 0x98ec00 VAddr 0x0014c6e8957000
++ wait 3110427
+ remote address: LID 0x1d7 QPN 0x35c2 PSN 0x3b9c08 RKey 0x98ec00 VAddr 0x0014c6e8a57000
+---------------------------------------------------------------------------------------
+ #bytes     #iterations    BW peak[Gb/sec]    BW average[Gb/sec]   MsgRate[Mpps]
+ 1048576    20000            98.23              98.17  		     0.011703
+---------------------------------------------------------------------------------------
++ sleep 2
++ run_bw 'INTER-LEAF (crosses spine)' '' ''
++ local 'LABEL=INTER-LEAF (crosses spine)' S= C=
++ '[' -z '' ']'
++ echo 'skip INTER-LEAF (crosses spine) (no pair)'
+skip INTER-LEAF (crosses spine) (no pair)
++ return
++ echo '=== DONE ==='
+=== DONE ===

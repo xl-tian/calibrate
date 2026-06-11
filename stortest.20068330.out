@@ -1,0 +1,18 @@
+### SINGLE-NODE BeeGFS bandwidth ###
+[single compute-b5-21] WRITE 2.02 GB/s (8 streams x 4096 MiB direct)
+[single compute-b5-21] READ  2.96 GB/s
+### MULTI-NODE simultaneous (aggregate = sum of per-node) ###
+[multi compute-b5-21] WRITE 1.81 GB/s (8 streams x 4096 MiB direct)
+[multi compute-b5-21] READ  2.19 GB/s
+[multi compute-b5-22] WRITE 1.04 GB/s (8 streams x 4096 MiB direct)
+[multi compute-b5-22] READ  4.62 GB/s
+### IPoIB ping to BeeGFS servers (coarse latency / equidistance check) ###
+[from compute-b5-21 leaf d85800]   oss/mds 192.168.128.240 : 0.103 ms avg (min mdev = 0.070)
+[from compute-b5-21 leaf d85800]   oss/mds 192.168.128.242 : 0.118 ms avg (min mdev = 0.070)
+[from compute-b5-21 leaf d85800]   oss/mds 192.168.128.246 : 0.064 ms avg (min mdev = 0.044)
+[from compute-b5-21 leaf d85800]   oss/mds 192.168.128.122 : 0.060 ms avg (min mdev = 0.048)
+[from compute-b5-22 leaf d85800]   oss/mds 192.168.128.240 : 0.097 ms avg (min mdev = 0.077)
+[from compute-b5-22 leaf d85800]   oss/mds 192.168.128.242 : 0.099 ms avg (min mdev = 0.069)
+[from compute-b5-22 leaf d85800]   oss/mds 192.168.128.246 : 0.064 ms avg (min mdev = 0.046)
+[from compute-b5-22 leaf d85800]   oss/mds 192.168.128.122 : 0.060 ms avg (min mdev = 0.047)
+=== DONE -> storage_results.20068330.txt ===

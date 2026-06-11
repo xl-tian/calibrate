@@ -1,0 +1,29 @@
+# multi-pair inter-leaf latency  job=19906266  Sun Jun  7 17:42:29 EDT 2026
+# allocation: compute-a7-10 compute-a8-47 compute-b5-10 compute-b6-27 compute-b7-9
+### INTER-LEAF (3 hops)  dc3d6a <-> d55ba6 : compute-a7-10 <-> compute-b5-10 ###
+  [VERIFIED inter] compute-a7-10 on b8cef60300dc3d6a  <->  compute-b5-10 on b8cef60300d55ba6  (different leaves => crosses spine)
+INTER dc3d6a/d55ba6        ib_write_lat  t_typical=1.73 us  t_avg=1.75 us
+INTER dc3d6a/d55ba6        ib_send_lat   t_typical=1.74 us  t_avg=1.76 us
+INTER dc3d6a/d55ba6        ib_read_lat   t_typical=3.34 us  t_avg=3.36 us
+### INTER-LEAF (3 hops)  dc3d6a <-> d85ae0 : compute-a7-10 <-> compute-b6-27 ###
+  [VERIFIED inter] compute-a7-10 on b8cef60300dc3d6a  <->  compute-b6-27 on b8cef60300d85ae0  (different leaves => crosses spine)
+INTER dc3d6a/d85ae0        ib_write_lat  t_typical=1.69 us  t_avg=1.71 us
+INTER dc3d6a/d85ae0        ib_send_lat   t_typical=1.70 us  t_avg=1.71 us
+INTER dc3d6a/d85ae0        ib_read_lat   t_typical=3.27 us  t_avg=3.27 us
+### INTER-LEAF (3 hops)  dc3d6a <-> d85ac0 : compute-a7-10 <-> compute-a8-47 ###
+  [VERIFIED inter] compute-a7-10 on b8cef60300dc3d6a  <->  compute-a8-47 on b8cef60300d85ac0  (different leaves => crosses spine)
+INTER dc3d6a/d85ac0        ib_write_lat  t_typical=1.64 us  t_avg=1.67 us
+INTER dc3d6a/d85ac0        ib_send_lat   t_typical=1.65 us  t_avg=1.66 us
+INTER dc3d6a/d85ac0        ib_read_lat   t_typical=3.17 us  t_avg=3.17 us
+### INTER-LEAF (3 hops)  dc3d6a <-> d55b66 : compute-a7-10 <-> compute-b7-9 ###
+  [VERIFIED inter] compute-a7-10 on b8cef60300dc3d6a  <->  compute-b7-9 on b8cef60300d55b66  (different leaves => crosses spine)
+### INTER-LEAF (3 hops)  d55ba6 <-> d85ae0 : compute-b5-10 <-> compute-b6-27 ###
+  [VERIFIED inter] compute-b5-10 on b8cef60300d55ba6  <->  compute-b6-27 on b8cef60300d85ae0  (different leaves => crosses spine)
+INTER d55ba6/d85ae0        ib_write_lat  t_typical=1.71 us  t_avg=1.72 us
+INTER d55ba6/d85ae0        ib_send_lat   t_typical=1.72 us  t_avg=1.73 us
+INTER d55ba6/d85ae0        ib_read_lat   t_typical=3.32 us  t_avg=3.33 us
+### INTER-LEAF (3 hops)  d55ba6 <-> d85ac0 : compute-b5-10 <-> compute-a8-47 ###
+  [VERIFIED inter] compute-b5-10 on b8cef60300d55ba6  <->  compute-a8-47 on b8cef60300d85ac0  (different leaves => crosses spine)
+INTER d55ba6/d85ac0        ib_write_lat  t_typical=1.66 us  t_avg=1.68 us
+INTER d55ba6/d85ac0        ib_send_lat   t_typical=1.68 us  t_avg=1.69 us
+INTER d55ba6/d85ac0        ib_read_lat   t_typical=3.21 us  t_avg=3.22 us

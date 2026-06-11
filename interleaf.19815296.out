@@ -1,0 +1,16 @@
+=== allocation leaf map ===
+  compute-b5-53 -> b8cef60300d85800
+  compute-b5-54 -> b8cef60300d85800
+  compute-b5-58 -> b8cef60300d85800
+  compute-b5-60 -> b8cef60300d85800
+INTRA pair: compute-b5-53 <-> compute-b5-54
+INTER pair: none <-> none
+### INTRA-LEAF (1 hop) baseline ###
+INTRA-1hop  ib_write_lat  t_typical=1.20 us  t_avg=1.29 us
+INTRA-1hop  ib_send_lat   t_typical=1.15 us  t_avg=1.24 us
+INTRA-1hop  ib_read_lat   t_typical=2.22 us  t_avg=2.62 us
+INTRA-1hop  ib_write_bw unidir BW_avg=96.80 Gb/s
+INTRA-1hop  ib_write_bw -b     BW_avg=164.38 Gb/s
+WARNING: allocation on a single leaf; no inter-leaf pair (attempt 3/50).
+Resubmitting fresh attempt 4...
+Submitted batch job 19815332

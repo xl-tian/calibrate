@@ -1,0 +1,5 @@
+# inter-leaf measurement  job=19815372  Sat Jun  6 02:11:17 EDT 2026
+# allocation: compute-b7-11 compute-b7-12
+### INTRA-LEAF (1 hop) baseline ###
+INTRA-1hop  ib_read_lat   t_typical=2.39 us  t_avg=2.53 us
+INTRA-1hop  ib_write_bw -b     BW_avg=188.17 Gb/s
